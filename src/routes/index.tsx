@@ -49,7 +49,7 @@ function Index() {
       <section className="relative overflow-hidden" onMouseMove={(e) => setMouse({ x: e.clientX / window.innerWidth - 0.5, y: e.clientY / window.innerHeight - 0.5 })}>
         <div className="blob absolute -left-20 top-10 h-[28rem] w-[28rem] bg-primary/20" />
         <div className="blob absolute right-0 bottom-0 h-[30rem] w-[30rem] bg-accent/20" style={{ animationDelay: "-8s" }} />
-        <div className="relative mx-auto grid max-w-[1400px] items-center gap-12 px-6 py-20 md:px-10 lg:min-h-[78vh] lg:grid-cols-2">
+        <div className="relative mx-auto grid max-w-[1680px] items-center gap-12 px-6 py-20 md:px-10 lg:min-h-[78vh] lg:grid-cols-2">
           <div>
             <span className="glass inline-block rounded-full px-5 py-2 text-base">New season · Up to 25% off</span>
             <h1 className="mt-8 font-display text-6xl leading-[1.02] md:text-8xl">Tech that feels <em className="text-primary">at home.</em></h1>
@@ -89,14 +89,14 @@ function Index() {
 
       {/* trust bar */}
       <section className="border-y bg-secondary/60">
-        <div className="mx-auto grid max-w-[1400px] grid-cols-2 gap-6 px-6 py-8 text-lg md:grid-cols-4 md:px-10">
+        <div className="mx-auto grid max-w-[1680px] grid-cols-2 gap-6 px-6 py-8 text-lg md:grid-cols-4 md:px-10">
           {["🚚 Free 2–4 day delivery", "↩︎ 30-day easy returns", "🛡 2-year warranty", "💬 Real humans on chat"].map((t) => <div key={t} className="font-medium">{t}</div>)}
         </div>
       </section>
 
       {/* hot deals — dark band */}
       <section id="deals" className="bg-foreground py-24 text-background">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+        <div className="mx-auto max-w-[1680px] px-6 md:px-10">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <span className="text-lg font-bold uppercase tracking-widest text-accent">🔥 Hot deals</span>
@@ -113,7 +113,7 @@ function Index() {
       </section>
 
       {/* recommended — editorial bento */}
-      <section id="picks" className="mx-auto max-w-[1400px] px-6 py-24 md:px-10">
+      <section id="picks" className="mx-auto max-w-[1680px] px-6 py-24 md:px-10">
         <span className="text-lg font-bold uppercase tracking-widest text-primary">★ Recommended for you</span>
         <h2 className="mt-3 font-display text-5xl md:text-6xl">Our team actually uses these.</h2>
         <div className="mt-12 grid gap-8 lg:grid-cols-3">
@@ -134,7 +134,7 @@ function Index() {
 
       {/* shop all with category tabs */}
       <section id="shop" className="bg-secondary/50 py-24">
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
+        <div className="mx-auto max-w-[1680px] px-6 md:px-10">
           <h2 className="font-display text-5xl md:text-6xl">Shop everything</h2>
           <div className="mt-8 flex flex-wrap gap-3">
             {cats.map((c) => (
@@ -149,7 +149,7 @@ function Index() {
       </section>
 
       {/* newsletter */}
-      <section className="mx-auto max-w-[1400px] px-6 py-24 md:px-10">
+      <section className="mx-auto max-w-[1680px] px-6 py-24 md:px-10">
         <div className="relative overflow-hidden rounded-[2.5rem] bg-primary p-12 text-primary-foreground md:p-20">
           <h2 className="max-w-2xl font-display text-5xl md:text-6xl">Get first dibs on deals.</h2>
           <p className="mt-4 max-w-xl text-xl opacity-80">One email a week. No spam, just the good stuff.</p>
@@ -162,7 +162,7 @@ function Index() {
       </section>
 
       <footer className="border-t">
-        <div className="mx-auto grid max-w-[1400px] gap-10 px-6 py-16 text-lg md:grid-cols-4 md:px-10">
+        <div className="mx-auto grid max-w-[1680px] gap-10 px-6 py-16 text-lg md:grid-cols-4 md:px-10">
           <div><div className="font-display text-3xl">Lumen</div><p className="mt-3 text-muted-foreground">Everyday tech, thoughtfully chosen.</p></div>
           {[["Shop", ["Audio", "Cameras", "Laptops", "Accessories"]], ["Help", ["Shipping", "Returns", "Warranty", "Contact"]], ["Company", ["About", "Stores", "Careers", "Press"]]].map(([h, items]) => (
             <div key={h as string}><div className="font-bold">{h as string}</div>

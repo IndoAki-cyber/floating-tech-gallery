@@ -34,7 +34,7 @@ function ProductPage() {
   return (
     <div className="min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-[1400px] px-6 py-12 md:px-10">
+      <main className="mx-auto max-w-[1680px] px-6 py-12 md:px-10">
         <Link to="/" className="text-lg text-muted-foreground hover:text-primary">← Back to shop</Link>
         <div className="mt-8 grid gap-12 lg:grid-cols-2">
           <div className="relative aspect-square overflow-hidden rounded-[2rem] bg-secondary">
