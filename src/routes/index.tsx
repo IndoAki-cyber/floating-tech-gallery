@@ -43,7 +43,7 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
 function Index() {
   const [active, setActive] = useState(0);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const p = products[active];
+  const p = products[active] ?? products[0]!;
 
   return (
     <div
