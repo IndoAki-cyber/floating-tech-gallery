@@ -116,7 +116,7 @@ export function SiteHeader() {
     <>
       <div className="bg-primary py-2 text-center text-sm font-medium text-primary-foreground">Free shipping & 30-day returns on every order</div>
       <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-6 py-5 md:px-10">
+        <div className="mx-auto flex max-w-[1680px] items-center gap-6 px-6 py-5 md:px-10">
           <Link to="/" className="font-display text-3xl">Lumen</Link>
           <nav className="hidden gap-8 text-lg lg:flex">
             <a href="/#deals" className="hover:text-primary">Hot deals</a>
