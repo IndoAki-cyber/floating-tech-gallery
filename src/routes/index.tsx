@@ -37,7 +37,7 @@ function Index() {
   const hero = products[0]!;
   const floaters = products.filter((p) => p.cutout).slice(1);
   const deals = products.filter((p) => p.hot);
-  const picks = products.filter((p) => p.recommended);
+  const picks = products.filter((p) => p.recommended).sort((a, b) => Number(a.cutout) - Number(b.cutout));
   const cats = ["All", ...new Set(products.map((p) => p.category))];
   const shown = cat === "All" ? products : products.filter((p) => p.category === cat);
 
