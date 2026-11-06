@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Document-level integration scripts belong before the closing body in `src/routes/__root.tsx`; TanStack Start uses this shell instead of a root `index.html`.
