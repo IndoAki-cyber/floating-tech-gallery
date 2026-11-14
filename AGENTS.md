@@ -30,3 +30,5 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - Document-level integration scripts belong before the closing body in `src/routes/__root.tsx`; TanStack Start uses this shell instead of a root `index.html`.
+- Keep rebuild effects in the landing-page overlay wrapper, using temporary opacity and cancellable browser animations rather than changing page geometry; this preserves layout and restores original interactions after skip or unmount.
+- Use a single native IntersectionObserver builder beneath the replay wrapper for both initial viewport and scroll reveals; one owner prevents competing animation overlays and preserves built sections while navigating the page.

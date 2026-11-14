@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
 import { money, products } from "@/lib/showroom-images";
+import { SwarmRebuildOverlay } from "@/components/SwarmRebuildOverlay";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,6 +43,7 @@ function Index() {
   const shown = cat === "All" ? products : products.filter((p) => p.category === cat);
 
   return (
+    <SwarmRebuildOverlay>
     <div className="min-h-screen">
       <SiteHeader />
 
@@ -172,5 +174,6 @@ function Index() {
         <div className="pb-8 text-center text-muted-foreground">© 2026 Lumen</div>
       </footer>
     </div>
+    </SwarmRebuildOverlay>
   );
 }
