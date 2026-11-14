@@ -108,13 +108,20 @@ function RootShell({ children }: { children: ReactNode }) {
         <script src="https://jsdelivr.net" defer />
         <script
           dangerouslySetInnerHTML={{
-            __html: `document.addEventListener('DOMContentLoaded', function () {
+            __html: `(function () {
+  function startSwarm() {
   if (typeof window.startSwarmRebuild === 'function') {
     window.startSwarmRebuild();
   } else {
     console.warn('Swarm did not start: https://jsdelivr.net did not define window.startSwarmRebuild.');
   }
-}, { once: true });`,
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startSwarm, { once: true });
+  } else {
+    startSwarm();
+  }
+})();`,
           }}
         />
       </body>
