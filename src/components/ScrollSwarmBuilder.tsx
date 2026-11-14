@@ -107,6 +107,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         setFrames([]);
         const revealTime = REVEAL_DURATION_MS / speedRef.current;
         arrived.forEach((element) => {
+          element.dataset.swarmBuilt = "true";
           pending.current.delete(element);
           observer.current?.unobserve(element);
           element.classList.remove("swarm-pending");

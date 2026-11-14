@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SWARM_BUILDERS, SWARM_SPEEDS, WIREFRAME_DURATION_MS, buildDuration } from "./swarm-rebuild";
+import { SWARM_BUILDERS, SWARM_SPEEDS, WIREFRAME_DURATION_MS, SCROLL_WIREFRAME_DURATION_MS, buildDuration } from "./swarm-rebuild";
 
 describe("Swarm rebuild rules", () => {
   it("provides six named cursors", () => {
@@ -7,6 +7,9 @@ describe("Swarm rebuild rules", () => {
   });
   it("flashes wireframes for 200 milliseconds", () => {
     expect(WIREFRAME_DURATION_MS).toBe(200);
+  });
+  it("flashes scroll-triggered wireframes for 180 milliseconds", () => {
+    expect(SCROLL_WIREFRAME_DURATION_MS).toBe(180);
   });
   it("supports 1x, 2x, and 3x speeds without shortening the wireframe flash", () => {
     expect(SWARM_SPEEDS).toEqual([1, 2, 3]);
