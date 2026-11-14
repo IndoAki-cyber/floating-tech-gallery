@@ -107,7 +107,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         setFrames([]);
         const revealTime = REVEAL_DURATION_MS / speedRef.current;
         arrived.forEach((element) => {
-          element.dataset.swarmBuilt = "true";
+          element.dataset['swarmBuilt'] = "true";
           pending.current.delete(element);
           observer.current?.unobserve(element);
           element.classList.remove("swarm-pending");
@@ -151,7 +151,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     });
     // Re-enabling leaves previously built elements untouched; Replay deliberately resets them.
     elements.current.forEach((element) => {
-      if (reset || element.dataset.swarmBuilt !== "true") {
+      if (reset || element.dataset['swarmBuilt'] !== "true") {
         element.classList.add("swarm-pending");
         pending.current.add(element);
       }
@@ -219,7 +219,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     <Button variant="outline" size="sm" className="swarm-live-toggle" aria-pressed={enabled}
       onClick={() => {
         if (enabled) {
-          elements.current.forEach((element) => { element.dataset.swarmBuilt = "true"; });
+          elements.current.forEach((element) => { element.dataset['swarmBuilt'] = "true"; });
           disable();
         } else start(false);
       }}>Live Build: {enabled ? "ON" : "OFF"}</Button>
