@@ -12,6 +12,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
   const pending = useRef(new Set<HTMLElement>());
   const queue = useRef(new Set<HTMLElement>());
   const observer = useRef<IntersectionObserver | null>(null);
+  const mutations = useRef<MutationObserver | null>(null);
   const animations = useRef<Animation[]>([]);
   const generation = useRef(0);
   const running = useRef(false);
@@ -31,6 +32,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
   const cleanup = useCallback(() => {
     generation.current++;
     observer.current?.disconnect();
+    mutations.current?.disconnect();
     if (timer.current !== null) clearTimeout(timer.current);
     cancelWait.current?.();
     cancelWait.current = null;
@@ -62,7 +64,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         x: Math.max(8, Math.min(window.innerWidth - 82, rect.left + Math.min(rect.width / 2, 64))),
         y: Math.max(20, Math.min(window.innerHeight - 100, rect.top + Math.min(rect.height / 2, 44))),
       } : {
-        x: 16 + index * Math.max(42, (window.innerWidth - 110) / 6),
+        x: 8 + index * Math.max(0, (window.innerWidth - 96) / 5),
         y: 70 + (index % 2) * 45,
       };
     }));
@@ -83,7 +85,12 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         const visible = Array.from(queue.current).filter((element) => {
           const rect = element.getBoundingClientRect();
           return pending.current.has(element) && rect.bottom > 0 && rect.top < window.innerHeight;
-        }).sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
+        }).sort((a, b) => {
+          // Reveal containers before their children so no built element stays hidden by its parent.
+          if (a.contains(b)) return -1;
+          if (b.contains(a)) return 1;
+          return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
+        });
         const batch = visible.slice(0, 6);
         if (!batch.length) break;
         batch.forEach((element) => queue.current.delete(element));
@@ -114,10 +121,14 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
           if (element.animate) {
             const computed = getComputedStyle(element);
             const base = computed.transform === "none" ? "" : computed.transform;
-            animations.current.push(element.animate([
+             const animation = element.animate([
               { opacity: 0, transform: `${base} scale(0.97)` },
               { opacity: computed.opacity, transform: `${base} scale(1)` },
-            ], { duration: revealTime, easing: "cubic-bezier(.2,.7,.2,1)" }));
+             ], { duration: revealTime, easing: "cubic-bezier(.2,.7,.2,1)" });
+             animations.current.push(animation);
+             animation.onfinish = () => {
+               animations.current = animations.current.filter((active) => active !== animation);
+             };
           }
         });
         await wait(revealTime);
@@ -166,6 +177,27 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
       drain();
     }, { rootMargin: "0px 0px 60px 0px", threshold: 0 });
     pending.current.forEach((element) => observer.current?.observe(element));
+    // Category changes can insert new cards without remounting the landing page.
+    mutations.current = new MutationObserver(() => {
+      elements.current = elements.current.filter((element) => {
+        if (content.contains(element)) return true;
+        pending.current.delete(element);
+        queue.current.delete(element);
+        observer.current?.unobserve(element);
+        return false;
+      });
+      const known = new Set(elements.current);
+      content.querySelectorAll<HTMLElement>(SELECTOR).forEach((element) => {
+        if (known.has(element) || element.dataset['swarmBuilt'] === "true") return;
+        const rect = element.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        elements.current.push(element);
+        element.classList.add("swarm-pending");
+        pending.current.add(element);
+        observer.current?.observe(element);
+      });
+    });
+    mutations.current.observe(content, { childList: true, subtree: true });
   }, [cleanup, disable, drain, position]);
 
   useEffect(() => {
