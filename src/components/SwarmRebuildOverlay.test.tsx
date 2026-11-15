@@ -25,7 +25,7 @@ describe("Swarm restoration", () => {
     expect(below.classList.contains("swarm-pending")).toBe(true);
     const entry: IntersectionObserverEntry = { isIntersecting: true, target: visible, boundingClientRect: visible.getBoundingClientRect(), intersectionRect: visible.getBoundingClientRect(), intersectionRatio: 1, rootBounds: null, time: 0 };
     act(() => notify([entry], {} as IntersectionObserver));
-    await act(async () => { await vi.advanceTimersByTimeAsync(460); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(260); });
     expect(container.querySelectorAll(".swarm-wireframe")).toHaveLength(1);
     await act(async () => { await vi.advanceTimersByTimeAsync(179); });
     expect(visible.dataset['swarmBuilt']).toBeUndefined();

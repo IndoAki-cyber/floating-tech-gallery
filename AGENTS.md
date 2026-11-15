@@ -33,3 +33,4 @@ use the editor.
 - Keep rebuild effects in the landing-page overlay wrapper, using temporary opacity and cancellable browser animations rather than changing page geometry; this preserves layout and restores original interactions after skip or unmount.
 - Use a single native IntersectionObserver builder beneath the replay wrapper for both initial viewport and scroll reveals; one owner prevents competing animation overlays and preserves built sections while navigating the page.
 - Keep Swarm startup local to the landing-page wrapper and observe inserted content; external startup scripts can block loading or duplicate the native builder.
+- Assign targets through the shared Swarm role classifier and animate only visual properties; each cursor owns one role and text/image reveals retain original content and geometry.
