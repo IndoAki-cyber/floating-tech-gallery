@@ -23,7 +23,8 @@ describe("Swarm restoration", () => {
     if (!visible || !below) throw new Error("Missing targets");
     expect(container.querySelectorAll(".swarm-cursor")).toHaveLength(6);
     expect(below.classList.contains("swarm-pending")).toBe(true);
-    act(() => notify([{ isIntersecting: true, target: visible } as IntersectionObserverEntry], {} as IntersectionObserver));
+    const entry: IntersectionObserverEntry = { isIntersecting: true, target: visible, boundingClientRect: visible.getBoundingClientRect(), intersectionRect: visible.getBoundingClientRect(), intersectionRatio: 1, rootBounds: null, time: 0 };
+    act(() => notify([entry], {} as IntersectionObserver));
     await act(async () => { await vi.advanceTimersByTimeAsync(460); });
     expect(container.querySelectorAll(".swarm-wireframe")).toHaveLength(1);
     await act(async () => { await vi.advanceTimersByTimeAsync(179); });
@@ -33,7 +34,7 @@ describe("Swarm restoration", () => {
     expect(visible.classList.contains("swarm-pending")).toBe(false);
     expect(unobserve).toHaveBeenCalledWith(visible);
     expect(below.classList.contains("swarm-pending")).toBe(true);
-    act(() => notify([{ isIntersecting: true, target: visible } as IntersectionObserverEntry], {} as IntersectionObserver));
+    act(() => notify([entry], {} as IntersectionObserver));
     await act(async () => { await vi.advanceTimersByTimeAsync(1500); });
     expect(visible.classList.contains("swarm-pending")).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Live Build: ON" }));
