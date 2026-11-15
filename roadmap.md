@@ -4,3 +4,4 @@
 - [x] Verify replay, skip, interaction restoration, and mobile layout.
 - [x] Integrate native scroll-triggered building with persistent cursors and a Live Build toggle; reveal each element once and use 180ms scroll wireframes.
 - [x] Verify native startup without the old external script and new cards after category changes.
+- [ ] Give six smaller nameless cursors distinct construction roles, pointer orbits, image expansion, and writing reveals; verify smooth scroll and restoration.

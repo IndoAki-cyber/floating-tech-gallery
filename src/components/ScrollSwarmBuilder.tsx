@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { RotateCcw, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SWARM_BUILDERS, SWARM_SPEEDS, CURSOR_TRAVEL_MS, REVEAL_DURATION_MS, SCROLL_WIREFRAME_DURATION_MS, type SwarmSpeed } from "@/lib/swarm-rebuild";
+import { SWARM_ROLES, SWARM_SPEEDS, LIVE_CURSOR_TRAVEL_MS, LIVE_REVEAL_DURATION_MS, SCROLL_WIREFRAME_DURATION_MS, swarmRole, type SwarmSpeed } from "@/lib/swarm-rebuild";
 
 type Cursor = { x: number; y: number };
-const SELECTOR = "header, section, footer, article, h1, h2, h3, p, button, a, img, input, form, [data-swarm-item]";
+const SELECTOR = "header, section, footer, article, h1, h2, h3, p, button, a, img, input, form, span, li, .group, [data-swarm-item]";
+const roleOf = (element: HTMLElement) => swarmRole(element.tagName, element.classList.contains("group"));
 
 export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
   const root = useRef<HTMLDivElement>(null);
@@ -20,14 +21,17 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
   const cancelWait = useRef<(() => void) | null>(null);
   const speedRef = useRef<SwarmSpeed>(1);
   const activeTargets = useRef<HTMLElement[]>([]);
+  const pointer = useRef<Cursor | null>(null);
+  const orbit = useRef(0);
+  const revealing = useRef<{ start: number; duration: number } | null>(null);
   const [speed, setSpeed] = useState<SwarmSpeed>(1);
   const [enabled, setEnabled] = useState(true);
   const enabledRef = useRef(true);
   const [busy, setBusy] = useState(false);
   const [boot, setBoot] = useState(true);
   const [cursors, setCursors] = useState<Cursor[]>([]);
-  const [frames, setFrames] = useState<DOMRect[]>([]);
-  const [travel, setTravel] = useState(CURSOR_TRAVEL_MS);
+  const [frames, setFrames] = useState<{ rect: DOMRect; role: number }[]>([]);
+  const [travel, setTravel] = useState(LIVE_CURSOR_TRAVEL_MS);
 
   const cleanup = useCallback(() => {
     generation.current++;
@@ -42,6 +46,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     pending.current.clear();
     queue.current.clear();
     activeTargets.current = [];
+    revealing.current = null;
     running.current = false;
     root.current?.setAttribute("data-swarm-phase", "ready");
   }, []);
@@ -57,15 +62,19 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
   }, [cleanup]);
 
   const position = useCallback((targets: HTMLElement[]) => {
-    setCursors(SWARM_BUILDERS.map((_, index) => {
-      const element = targets[index];
+    const center = pointer.current ?? { x: window.innerWidth / 2, y: Math.min(150, window.innerHeight / 3) };
+    const reveal = revealing.current;
+    const progress = reveal ? Math.min(1, (performance.now() - reveal.start) / reveal.duration) : 0;
+    setCursors(SWARM_ROLES.map((_, index) => {
+      const element = targets.find((target) => roleOf(target) === index);
       const rect = element?.getBoundingClientRect();
+      const angle = orbit.current + index * Math.PI / 3;
       return rect ? {
-        x: Math.max(8, Math.min(window.innerWidth - 82, rect.left + Math.min(rect.width / 2, 64))),
-        y: Math.max(20, Math.min(window.innerHeight - 100, rect.top + Math.min(rect.height / 2, 44))),
+        x: Math.max(4, Math.min(window.innerWidth - 20, rect.left + (index === 2 || index === 3 ? rect.width * progress : Math.min(rect.width / 2, 32)))),
+        y: Math.max(4, Math.min(window.innerHeight - 24, rect.top + (index === 2 ? rect.height * progress : index === 3 ? Math.min(rect.height, 22) : Math.min(rect.height / 2, 24)))),
       } : {
-        x: 8 + index * Math.max(0, (window.innerWidth - 96) / 5),
-        y: 70 + (index % 2) * 45,
+        x: Math.max(4, Math.min(window.innerWidth - 20, center.x + Math.cos(angle) * 34)),
+        y: Math.max(4, Math.min(window.innerHeight - 24, center.y + Math.sin(angle) * 28)),
       };
     }));
   }, []);
@@ -91,11 +100,20 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
           if (b.contains(a)) return 1;
           return a.getBoundingClientRect().top - b.getBoundingClientRect().top;
         });
-        const batch = visible.slice(0, 6);
+        const roles = new Set<number>();
+        const batch = visible.filter((element) => {
+          const role = roleOf(element);
+          if (roles.has(role)) return false;
+          // A child cannot be revealed while an unbuilt parent still hides it.
+          if (visible.some((parent) => parent !== element && parent.contains(element) && pending.current.has(parent))) return false;
+          roles.add(role);
+          return true;
+        });
         if (!batch.length) break;
         batch.forEach((element) => queue.current.delete(element));
         activeTargets.current = batch;
-        const travelTime = CURSOR_TRAVEL_MS / speedRef.current;
+        revealing.current = null;
+        const travelTime = LIVE_CURSOR_TRAVEL_MS / speedRef.current;
         setTravel(travelTime);
         position(batch);
         await wait(travelTime);
@@ -108,11 +126,12 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         batch.filter((element) => !arrived.includes(element)).forEach((element) => queue.current.add(element));
         activeTargets.current = arrived;
         position(arrived);
-        setFrames(arrived.map((element) => element.getBoundingClientRect()));
+        setFrames(arrived.map((element) => ({ rect: element.getBoundingClientRect(), role: roleOf(element) })));
         await wait(SCROLL_WIREFRAME_DURATION_MS);
         if (generation.current !== run) return;
         setFrames([]);
-        const revealTime = REVEAL_DURATION_MS / speedRef.current;
+        const revealTime = LIVE_REVEAL_DURATION_MS / speedRef.current;
+        revealing.current = { start: performance.now(), duration: revealTime };
         arrived.forEach((element) => {
           element.dataset['swarmBuilt'] = "true";
           pending.current.delete(element);
@@ -122,8 +141,8 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
             const computed = getComputedStyle(element);
             const base = computed.transform === "none" ? "" : computed.transform;
              const animation = element.animate([
-              { opacity: 0, transform: `${base} scale(0.97)` },
-              { opacity: computed.opacity, transform: `${base} scale(1)` },
+              { opacity: 0, transform: `${base} scale(${roleOf(element) === 2 ? "0.12" : "0.98"})`, transformOrigin: roleOf(element) === 2 ? "top left" : computed.transformOrigin, clipPath: roleOf(element) === 3 ? "inset(0 100% 0 0)" : "inset(0)" },
+              { opacity: computed.opacity, transform: `${base} scale(1)`, transformOrigin: roleOf(element) === 2 ? "top left" : computed.transformOrigin, clipPath: "inset(0)" },
              ], { duration: revealTime, easing: "cubic-bezier(.2,.7,.2,1)" });
              animations.current.push(animation);
              animation.onfinish = () => {
@@ -132,6 +151,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
           }
         });
         await wait(revealTime);
+        revealing.current = null;
       }
       if (generation.current === run) {
         running.current = false;
@@ -212,17 +232,32 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
       frame = requestAnimationFrame(() => {
         if (!enabledRef.current) return;
         position(activeTargets.current);
-        if (activeTargets.current.length) setFrames((previous) => previous.length ? activeTargets.current.map((element) => element.getBoundingClientRect()) : previous);
+        if (activeTargets.current.length) setFrames((previous) => previous.length ? activeTargets.current.map((element) => ({ rect: element.getBoundingClientRect(), role: roleOf(element) })) : previous);
         drain();
       });
     };
     const media = window.matchMedia?.("(prefers-reduced-motion: reduce)");
     const changed = () => { if (media?.matches) disable(); };
+    const moved = (event: PointerEvent) => { pointer.current = { x: event.clientX, y: event.clientY }; };
+    let orbitFrame = 0;
+    let previous = 0;
+    const tick = (now: number) => {
+      if (now - previous >= 32 && enabledRef.current) {
+        orbit.current = now / 1100;
+        position(activeTargets.current);
+        previous = now;
+      }
+      orbitFrame = requestAnimationFrame(tick);
+    };
+    orbitFrame = requestAnimationFrame(tick);
+    window.addEventListener("pointermove", moved, { passive: true });
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
     media?.addEventListener?.("change", changed);
     return () => {
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(orbitFrame);
+      window.removeEventListener("pointermove", moved);
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
       media?.removeEventListener?.("change", changed);
@@ -233,12 +268,11 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     <div ref={root} className="swarm-content" data-swarm-phase={boot ? "boot" : "ready"}>{children}</div>
     <noscript><style>{`.swarm-content[data-swarm-phase="boot"] > * { visibility: visible; }`}</style></noscript>
     <div className="swarm-layer" aria-hidden="true">
-      {cursors.map((cursor, index) => <div key={SWARM_BUILDERS[index]} className={`swarm-cursor swarm-builder-${index}`}
-        style={{ transform: `translate3d(${cursor.x}px, ${cursor.y}px, 0)`, transitionDuration: `${travel}ms` }}>
-        <svg width="25" height="30" viewBox="0 0 25 30" fill="none"><path d="M2 2L22 17L12 19L7 28L2 2Z" fill="currentColor" stroke="var(--swarm-cursor-edge)" strokeWidth="2" strokeLinejoin="round" /></svg>
-        <span className="swarm-name">{SWARM_BUILDERS[index]}</span>
+      {cursors.map((cursor, index) => <div key={SWARM_ROLES[index]} data-swarm-role={SWARM_ROLES[index]} className={`swarm-cursor swarm-builder-${index}`}
+        style={{ transform: `translate3d(${cursor.x}px, ${cursor.y}px, 0)`, transitionDuration: `${revealing.current ? 40 : travel}ms` }}>
+        <svg width="14" height="18" viewBox="0 0 25 30" fill="none"><path d="M2 2L22 17L12 19L7 28L2 2Z" fill="currentColor" stroke="var(--swarm-cursor-edge)" strokeWidth="2" strokeLinejoin="round" /></svg>
       </div>)}
-      {frames.map((rect, index) => <div key={index} className={`swarm-wireframe swarm-builder-${index}`}
+      {frames.map(({ rect, role }, index) => <div key={index} className={`swarm-wireframe swarm-builder-${role}`}
         style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }} />)}
     </div>
     <div className="swarm-controls" role="group" aria-label="Swarm rebuild controls">

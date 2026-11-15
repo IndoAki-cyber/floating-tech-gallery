@@ -143,7 +143,7 @@
 .swarm-builder-4 { color: var(--swarm-maya); }
 .swarm-builder-5 { color: var(--swarm-kai); }
 .swarm-cursor {
-  position: absolute; top: 0; left: 0; width: 80px; height: 56px;
+  position: absolute; top: 0; left: 0; width: 14px; height: 18px;
   transition-property: transform, opacity;
   transition-timing-function: cubic-bezier(.22,.75,.3,1);
   will-change: transform;
