@@ -163,12 +163,8 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         activeTargets.current = [];
             setFrames([]);
         sweep();
-        if (pending.current.size === 0) {
-          // Everything is built: the swarm leaves until the next page load.
-          cleanup();
-          enabledRef.current = false;
-          setCursors([]);
-        } else position([]);
+        // Built or not, the swarm keeps orbiting so late or newly inserted content can still be built.
+        position([]);
       }
     })();
   }, [position, cleanup]);
@@ -251,8 +247,12 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     const moved = (event: PointerEvent) => { pointer.current = { x: event.clientX, y: event.clientY }; };
     let orbitFrame = 0;
     let previous = 0;
+    // Low-end devices orbit at a lower frame rate; hidden tabs skip work entirely.
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowEnd = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4;
+    const step = lowEnd ? 66 : 32;
     const tick = (now: number) => {
-      if (now - previous >= 32 && enabledRef.current) {
+      if (now - previous >= step && enabledRef.current && !document.hidden) {
         orbit.current = now / 1100;
         position(activeTargets.current);
         previous = now;

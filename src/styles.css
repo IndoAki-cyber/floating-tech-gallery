@@ -135,7 +135,7 @@
 .swarm-pending { opacity: 0 !important; pointer-events: none !important; }
 .swarm-pending:focus-within { opacity: 1 !important; pointer-events: auto !important; }
 .swarm-content[data-swarm-phase="building"] { pointer-events: none; }
-.swarm-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 80; }
+.swarm-layer { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 80; contain: strict; }
 .swarm-builder-0 { color: var(--swarm-alex); }
 .swarm-builder-1 { color: var(--swarm-sam); }
 .swarm-builder-2 { color: var(--swarm-dev); }
