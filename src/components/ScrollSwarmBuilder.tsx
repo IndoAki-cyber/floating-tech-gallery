@@ -85,7 +85,17 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     });
     void (async () => {
       await wait(40);
+      // Elements the visitor scrolled past too quickly are revealed in place so the build can finish.
+      const sweep = () => pending.current.forEach((element) => {
+        if (element.getBoundingClientRect().bottom > 0) return;
+        element.dataset['swarmBuilt'] = "true";
+        pending.current.delete(element);
+        queue.current.delete(element);
+        observer.current?.unobserve(element);
+        element.classList.remove("swarm-pending");
+      });
       while (generation.current === run && enabledRef.current) {
+        sweep();
         const visible = Array.from(queue.current).filter((element) => {
           const rect = element.getBoundingClientRect();
           return pending.current.has(element) && rect.bottom > 0 && rect.top < window.innerHeight;
@@ -152,6 +162,7 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
         running.current = false;
         activeTargets.current = [];
             setFrames([]);
+        sweep();
         if (pending.current.size === 0) {
           // Everything is built: the swarm leaves until the next page load.
           cleanup();
