@@ -9,7 +9,7 @@ export function ProductCard({ p, variant = "default" }: { p: Product; variant?: 
     <div className={`group relative flex flex-col overflow-hidden rounded-3xl border bg-card transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${variant === "deal" ? "border-accent/40" : ""}`}>
       {variant === "deal" && off > 0 && <span className="absolute left-4 top-4 z-10 rounded-full bg-accent px-4 py-1.5 text-sm font-bold text-accent-foreground">−{off}% today</span>}
       {variant === "pick" && <span className="absolute left-4 top-4 z-10 rounded-full bg-background/90 px-4 py-1.5 text-sm font-bold">★ Staff pick</span>}
-      <Link to="/product/$id" params={{ id: p.id }} className="block aspect-square overflow-hidden bg-secondary">
+      <Link to="/product/$id" params={{ id: p.id }} className="block aspect-[4/3] overflow-hidden bg-secondary p-6">
         <img src={p.img} alt={p.name} loading="lazy" width={1024} height={1024}
           className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${p.cutout ? "float-a object-contain p-8" : "object-cover"}`} />
       </Link>

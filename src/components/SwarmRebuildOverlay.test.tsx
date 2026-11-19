@@ -54,10 +54,7 @@ describe("Swarm restoration", () => {
     expect(container.querySelectorAll(".swarm-pending").length).toBe(0);
     fireEvent.click(screen.getByRole("button", { name: "Buy" }));
     expect(click).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getByRole("button", { name: "Replay Build" }));
-    expect(container.querySelectorAll(".swarm-pending").length).toBe(3);
-    fireEvent.click(screen.getByRole("button", { name: "Live Build: ON" }));
-    expect(container.querySelectorAll(".swarm-pending").length).toBe(0);
+    expect(screen.queryByRole("button", { name: "Replay Build" })).toBeNull();
   });
   it("leaves the page visible if IntersectionObserver is unavailable", () => {
     vi.stubGlobal("IntersectionObserver", undefined);

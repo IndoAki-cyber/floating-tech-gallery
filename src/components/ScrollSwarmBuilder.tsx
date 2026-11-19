@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { RotateCcw, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SWARM_ROLES, SWARM_SPEEDS, LIVE_CURSOR_TRAVEL_MS, LIVE_REVEAL_DURATION_MS, SCROLL_WIREFRAME_DURATION_MS, swarmRole, type SwarmSpeed } from "@/lib/swarm-rebuild";
+import { SWARM_ROLES, LIVE_CURSOR_TRAVEL_MS, LIVE_REVEAL_DURATION_MS, SCROLL_WIREFRAME_DURATION_MS, swarmRole } from "@/lib/swarm-rebuild";
 
 type Cursor = { x: number; y: number };
 const SELECTOR = "header, section, footer, article, h1, h2, h3, p, button, a, img, input, form, span, li, .group, [data-swarm-item]";
@@ -19,15 +18,13 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
   const running = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cancelWait = useRef<(() => void) | null>(null);
-  const speedRef = useRef<SwarmSpeed>(1);
+  const speedRef = useRef(1);
   const activeTargets = useRef<HTMLElement[]>([]);
   const pointer = useRef<Cursor | null>(null);
   const orbit = useRef(0);
   const revealing = useRef<{ start: number; duration: number } | null>(null);
-  const [speed, setSpeed] = useState<SwarmSpeed>(1);
   const [enabled, setEnabled] = useState(true);
   const enabledRef = useRef(true);
-  const [busy, setBusy] = useState(false);
   const [boot, setBoot] = useState(true);
   const [cursors, setCursors] = useState<Cursor[]>([]);
   const [frames, setFrames] = useState<{ rect: DOMRect; role: number }[]>([]);
@@ -55,7 +52,6 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     cleanup();
     enabledRef.current = false;
     setEnabled(false);
-    setBusy(false);
     setBoot(false);
     setFrames([]);
     setCursors([]);
@@ -88,7 +84,6 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
       timer.current = setTimeout(() => { cancelWait.current = null; resolve(); }, ms);
     });
     void (async () => {
-      setBusy(true);
       await wait(40);
       while (generation.current === run && enabledRef.current) {
         const visible = Array.from(queue.current).filter((element) => {
@@ -156,12 +151,16 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
       if (generation.current === run) {
         running.current = false;
         activeTargets.current = [];
-        setBusy(false);
-        setFrames([]);
-        position([]);
+            setFrames([]);
+        if (pending.current.size === 0) {
+          // Everything is built: the swarm leaves until the next page load.
+          cleanup();
+          enabledRef.current = false;
+          setCursors([]);
+        } else position([]);
       }
     })();
-  }, [position]);
+  }, [position, cleanup]);
 
   const start = useCallback((reset: boolean) => {
     cleanup();
@@ -274,13 +273,6 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
       </div>)}
       {frames.map(({ rect, role }, index) => <div key={index} className={`swarm-wireframe swarm-builder-${role}`}
         style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height }} />)}
-    </div>
-    <div className="swarm-controls" role="group" aria-label="Swarm rebuild controls">
-      <Button variant="ghost" size="sm" className="swarm-control" aria-label="Replay Build" title="Replay Build" onClick={() => start(true)}><RotateCcw /><span>Replay</span></Button>
-      <span className="swarm-control-divider" />
-      {SWARM_SPEEDS.map((value) => <Button key={value} variant={speed === value ? "secondary" : "ghost"} size="sm" className="swarm-speed"
-        aria-label={`${value}x build speed`} aria-pressed={speed === value} onClick={() => { speedRef.current = value; setSpeed(value); }}>{value}x</Button>)}
-      {busy && <><span className="swarm-control-divider" /><Button variant="ghost" size="sm" className="swarm-control" aria-label="Skip build animation" onClick={disable}>Skip<SkipForward /></Button></>}
     </div>
     <Button variant="outline" size="sm" className="swarm-live-toggle" aria-pressed={enabled}
       onClick={() => {
