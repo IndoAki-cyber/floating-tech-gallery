@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
@@ -33,7 +33,26 @@ function Countdown() {
 
 function Index() {
   const { add } = useCart();
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const heroSection = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const section = heroSection.current;
+    if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    let x = 0;
+    let y = 0;
+    const move = (event: PointerEvent) => {
+      x = event.clientX / window.innerWidth - 0.5;
+      y = event.clientY / window.innerHeight - 0.5;
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        section.style.setProperty("--hero-pointer-x", String(x));
+        section.style.setProperty("--hero-pointer-y", String(y));
+        frame = 0;
+      });
+    };
+    section.addEventListener("pointermove", move, { passive: true });
+    return () => { section.removeEventListener("pointermove", move); cancelAnimationFrame(frame); };
+  }, []);
   const [cat, setCat] = useState("All");
   const hero = products[0]!;
   const floaters = products.filter((p) => p.cutout).slice(1);
@@ -48,7 +67,7 @@ function Index() {
       <SiteHeader />
 
       {/* hero */}
-      <section className="relative overflow-hidden" onMouseMove={(e) => setMouse({ x: e.clientX / window.innerWidth - 0.5, y: e.clientY / window.innerHeight - 0.5 })}>
+      <section ref={heroSection} className="relative overflow-hidden">
         <div className="blob absolute -left-20 top-10 h-[28rem] w-[28rem] bg-primary/20" />
         <div className="blob absolute right-0 bottom-0 h-[30rem] w-[30rem] bg-accent/20" style={{ animationDelay: "-8s" }} />
         <div className="relative mx-auto grid max-w-[1500px] items-center gap-20 px-6 py-28 md:px-10 lg:min-h-[86vh] lg:grid-cols-2">
@@ -66,15 +85,15 @@ function Index() {
             </div>
           </div>
           <div className="relative h-[460px]">
-            <div className="glass absolute inset-10 rounded-full" style={{ transform: `translate(${mouse.x * -20}px, ${mouse.y * -20}px)` }} />
+            <div className="glass absolute inset-10 rounded-full" style={{ transform: "translate(calc(var(--hero-pointer-x, 0) * -20px), calc(var(--hero-pointer-y, 0) * -20px))" }} />
             <Link to="/product/$id" params={{ id: hero.id }}>
               <img src={hero.img} alt={hero.name} width={1024} height={1024} className="float-a absolute inset-0 m-auto h-[62%] w-[62%] object-contain drop-shadow-2xl"
-                style={{ translate: `${mouse.x * 30}px ${mouse.y * 30}px` }} />
+                style={{ translate: "calc(var(--hero-pointer-x, 0) * 30px) calc(var(--hero-pointer-y, 0) * 30px)" }} />
             </Link>
             {floaters.map((o, i) => (
               <Link key={o.id} to="/product/$id" params={{ id: o.id }}
                 className={`absolute ${["right-0 top-0", "bottom-4 left-0", "left-4 top-6"][i]} ${i % 2 ? "float-b" : "float-a"}`}
-                style={{ animationDelay: `${-i * 2}s`, translate: `${mouse.x * (50 + i * 20)}px ${mouse.y * (50 + i * 20)}px` }}>
+                style={{ animationDelay: `${-i * 2}s`, translate: `calc(var(--hero-pointer-x, 0) * ${50 + i * 20}px) calc(var(--hero-pointer-y, 0) * ${50 + i * 20}px)` }}>
                 <img src={o.img} alt={o.name} className="h-20 w-20 object-contain transition-transform hover:scale-125" />
               </Link>
             ))}

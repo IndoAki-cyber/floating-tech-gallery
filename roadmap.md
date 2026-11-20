@@ -5,3 +5,4 @@
 - [x] Integrate native scroll-triggered building with persistent cursors and a Live Build toggle; reveal each element once and use 180ms scroll wireframes.
 - [x] Verify native startup without the old external script and new cards after category changes.
 - [x] Give six smaller nameless cursors distinct construction roles, pointer orbits, image expansion, and writing reveals; verify smooth scroll and restoration.
+- [x] Reduce cursor rendering/layout overhead and pointer-driven shop rerenders; verify building, orbiting, scrolling, and shopping remain intact.

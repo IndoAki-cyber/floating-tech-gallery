@@ -34,3 +34,4 @@ use the editor.
 - Use a single native IntersectionObserver builder beneath the replay wrapper for both initial viewport and scroll reveals; one owner prevents competing animation overlays and preserves built sections while navigating the page.
 - Keep Swarm startup local to the landing-page wrapper and observe inserted content; external startup scripts can block loading or duplicate the native builder.
 - Assign targets through the shared Swarm role classifier and animate only visual properties; each cursor owns one role and text/image reveals retain original content and geometry.
+- Update cursor transforms directly through DOM refs and cache target rectangles between scroll/target changes; animation frames must not rerender the shop or repeatedly measure layout.

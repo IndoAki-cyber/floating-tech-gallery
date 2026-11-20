@@ -5,6 +5,23 @@ import { SwarmRebuildOverlay } from "./SwarmRebuildOverlay";
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("Swarm restoration", () => {
+  it("keeps idle cursors moving without repeated layout measurements", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("IntersectionObserver", class {
+      observe() {} unobserve() {} disconnect() {}
+    });
+    const measure = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
+      x: 0, y: 0, top: 0, left: 0, right: 200, bottom: 100, width: 200, height: 100, toJSON: () => ({}),
+    });
+    const { container } = render(<SwarmRebuildOverlay><h1>Product</h1></SwarmRebuildOverlay>);
+    const cursor = container.querySelector<HTMLElement>(".swarm-cursor");
+    if (!cursor) throw new Error("Missing cursor");
+    const initial = cursor.style.transform;
+    measure.mockClear();
+    await act(async () => { await vi.advanceTimersByTimeAsync(250); });
+    expect(cursor.style.transform).not.toBe(initial);
+    expect(measure).not.toHaveBeenCalled();
+  });
   it("builds visible elements once, flashes for 180ms, and waits for below-fold elements", async () => {
     vi.useFakeTimers();
     let notify: IntersectionObserverCallback = () => {};
