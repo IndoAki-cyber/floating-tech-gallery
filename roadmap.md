@@ -6,3 +6,5 @@
 - [x] Verify native startup without the old external script and new cards after category changes.
 - [x] Give six smaller nameless cursors distinct construction roles, pointer orbits, image expansion, and writing reveals; verify smooth scroll and restoration.
 - [x] Reduce cursor rendering/layout overhead and pointer-driven shop rerenders; verify building, orbiting, scrolling, and shopping remain intact.
+- [ ] Adapt homepage, product pages, search, and cart for phones without adding arrows.
+- [ ] Reduce mobile animation overhead and verify touch shopping at narrow widths.

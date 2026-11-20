@@ -258,7 +258,8 @@ export function ScrollSwarmBuilder({ children }: { children: ReactNode }) {
     // Low-end devices orbit at a lower frame rate; hidden tabs skip work entirely.
     const nav = navigator as Navigator & { deviceMemory?: number };
     const lowEnd = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4;
-    const step = lowEnd ? 66 : 16;
+    const touchDevice = window.matchMedia("(pointer: coarse)").matches;
+    const step = lowEnd ? 66 : touchDevice ? 32 : 16;
     const tick = (now: number) => {
       if (now - previous >= step && enabledRef.current && !document.hidden) {
         orbit.current = now / 1100;

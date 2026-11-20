@@ -35,3 +35,4 @@ use the editor.
 - Keep Swarm startup local to the landing-page wrapper and observe inserted content; external startup scripts can block loading or duplicate the native builder.
 - Assign targets through the shared Swarm role classifier and animate only visual properties; each cursor owns one role and text/image reveals retain original content and geometry.
 - Update cursor transforms directly through DOM refs and cache target rectangles between scroll/target changes; animation frames must not rerender the shop or repeatedly measure layout.
+- Keep phone shopping controls in shrinking grid tracks with touch-sized buttons; pause decorative motion on coarse pointers and hide the cursor overlay while shopping dialogs are open to keep touch interactions clear.
